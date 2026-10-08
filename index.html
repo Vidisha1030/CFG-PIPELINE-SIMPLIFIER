@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CFG Simplifier">
+
+<link rel="manifest" href="manifest.json">
+  <title>CFG Simplifier</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">⌬</div>
+      <div><strong>CFG Simplifier</strong><small>Three-Step Pipeline</small></div>
+    </div>
+    <nav>
+      <button class="nav-item active" data-section="pipeline">⌂ <span>Pipeline</span></button>
+      <button class="nav-item" data-section="editor">▤ <span>Grammar Editor</span></button>
+      <button class="nav-item" data-section="history">◷ <span>History</span></button>
+      <button class="nav-item" data-section="examples">▣ <span>Examples</span></button>
+      <button class="nav-item" id="downloadNav">⇩ <span>Download Result</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="automation-card">
+        <b>⚙ Automated Pipeline</b>
+        <span>Useless → Epsilon → Unit</span>
+      </div>
+      <button class="theme-btn" id="themeBtn">◐ Dark mode</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Three-Step Pipeline Simplifier</h1>
+        <p id="statusText">Ready — enter a CFG and run the pipeline.</p>
+      </div>
+      <div class="top-actions">
+        <label class="btn secondary">
+          📂 Load File
+          <input type="file" id="fileInput" accept=".txt,.cfg,.grammar" hidden>
+        </label>
+        <button class="btn secondary" id="examplesBtn">Examples</button>
+        <button class="btn primary" id="runBtn">▶ Run Pipeline</button>
+      </div>
+    </header>
+
+    <section class="pipeline-strip">
+      <div class="pipeline-step active"><b>1</b><span>Input<br><strong>Raw CFG</strong></span></div>
+      <i>→</i>
+      <div class="pipeline-step"><b>2</b><span>Useless<br><strong>Elimination</strong></span></div>
+      <i>→</i>
+      <div class="pipeline-step"><b>3</b><span>Epsilon<br><strong>Elimination</strong></span></div>
+      <i>→</i>
+      <div class="pipeline-step"><b>4</b><span>Unit<br><strong>Elimination</strong></span></div>
+      <i>→</i>
+      <div class="pipeline-step"><b>5</b><span>Final<br><strong>Clean CFG</strong></span></div>
+    </section>
+
+    <section id="pipeline" class="section active-section">
+      <div class="grid-two">
+        <article class="card">
+          <div class="card-head">
+            <div><h2>▣ Input Grammar</h2><small>Enter one production per line.</small></div>
+            <div>
+              <button class="small-btn" id="exampleBtn">Example</button>
+              <button class="small-btn" id="clearBtn">Clear</button>
+            </div>
+          </div>
+          <textarea id="grammarInput" spellcheck="false">S -> A B | a
+A -> a A | ε
+B -> b | C
+C -> c | ε
+D -> d</textarea>
+          <p class="hint">Use <b>→</b> or <b>-></b>. Separate alternatives with <b>|</b>. Use <b>ε</b> or <b>epsilon</b> for empty production.</p>
+          <button class="run-wide" id="runBtn2">▶ Run Pipeline</button>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div><h2>✓ Final Simplified Grammar</h2><small id="verification">Waiting for pipeline...</small></div>
+          </div>
+          <pre id="finalGrammar" class="grammar-box">Run the pipeline to see the final grammar.</pre>
+          <div class="stats" id="stats">
+            <div><span>Variables</span><b>—</b></div>
+            <div><span>Productions</span><b>—</b></div>
+            <div><span>Epsilon Rules</span><b>—</b></div>
+            <div><span>Unit Rules</span><b>—</b></div>
+          </div>
+          <div class="button-row">
+            <button class="small-btn" id="copyBtn">Copy</button>
+            <button class="small-btn" id="txtBtn">Download TXT</button>
+            <button class="small-btn" id="jsonBtn">Download JSON</button>
+            <button class="small-btn" id="reportBtn">Report</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="steps-grid">
+        <article class="card step-card">
+          <div class="step-title"><b>2</b><div><h3>Step 1: Useless Elimination</h3><small>Remove non-generating and unreachable variables.</small></div><span id="uselessBadge">—</span></div>
+          <div class="before-after">
+            <div><label>Before</label><pre id="uselessBefore">—</pre></div>
+            <div><label>After</label><pre id="uselessAfter">—</pre></div>
+          </div>
+        </article>
+
+        <article class="card step-card">
+          <div class="step-title"><b>3</b><div><h3>Step 2: Epsilon Elimination</h3><small>Remove ε-productions and generate nullable combinations.</small></div><span id="epsilonBadge">—</span></div>
+          <div class="before-after">
+            <div><label>Before</label><pre id="epsilonBefore">—</pre></div>
+            <div><label>After</label><pre id="epsilonAfter">—</pre></div>
+          </div>
+        </article>
+
+        <article class="card step-card">
+          <div class="step-title"><b>4</b><div><h3>Step 3: Unit Elimination</h3><small>Remove productions such as A → B.</small></div><span id="unitBadge">—</span></div>
+          <div class="before-after">
+            <div><label>Before</label><pre id="unitBefore">—</pre></div>
+            <div><label>After</label><pre id="unitAfter">—</pre></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="grid-two bottom-grid">
+        <article class="card">
+          <div class="card-head"><h2>◉ Symbol Analysis</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Variable</th><th>Generates</th><th>Reachable</th><th>Nullable</th><th>Result</th></tr></thead>
+              <tbody id="symbolTable"><tr><td colspan="5">Run the pipeline.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><h2>▤ Run Log</h2><button class="small-btn" id="clearLogBtn">Clear</button></div>
+          <pre id="runLog" class="log">No run yet.</pre>
+        </article>
+      </div>
+    </section>
+
+    <section id="editor" class="section">
+      <div class="card page-card">
+        <h2>Grammar Editor</h2>
+        <p>Use the editor on the Pipeline page to enter a raw CFG. The parser accepts <b>→</b> and <b>-></b>, multiple alternatives, ε/epsilon, and whitespace-separated symbols.</p>
+        <button class="btn primary" onclick="showSection('pipeline')">Open Pipeline</button>
+      </div>
+    </section>
+
+    <section id="history" class="section">
+      <div class="card page-card"><h2>Run History</h2><div id="historyList">No completed runs yet.</div></div>
+    </section>
+
+    <section id="examples" class="section">
+      <div class="card page-card">
+        <h2>Example Grammars</h2>
+        <div class="example-list">
+          <button class="example-choice" data-example="basic">Basic nullable CFG <span>S → AB | a; A → aA | ε; B → b | C; C → c | ε; D → d</span></button>
+          <button class="example-choice" data-example="units">Unit-chain CFG <span>S → A; A → B | a; B → C | b; C → c</span></button>
+          <button class="example-choice" data-example="useless">Useless symbols <span>S → A | b; A → a; B → c; C → D; D → D</span></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script src="script.js"></script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');</script></body>
+</html>
